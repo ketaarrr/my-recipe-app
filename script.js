@@ -18,8 +18,9 @@ const db = getFirestore(app);
 const recipeGrid = document.getElementById('recipe-grid');
 const shoppingList = document.getElementById('shopping-list');
 const copyBtn = document.getElementById('copy-btn');
-const searchInput = document.getElementById('search-input'); // Поиск
-const categoryFilters = document.getElementById('category-filters'); // Фильтры
+const searchInput = document.getElementById('search-input'); 
+const categoryFilters = document.getElementById('category-filters'); 
+const floatingCartBtn = document.getElementById('floating-cart-btn'); // НОВАЯ КНОПКА
 
 // Модальное окно добавления
 const addRecipeModal = document.getElementById('add-recipe-modal');
@@ -30,11 +31,9 @@ const recipeCategoryInput = document.getElementById('recipe-category');
 const recipeDescriptionInput = document.getElementById('recipe-description');
 const addRecipeBtn = document.getElementById('add-recipe-btn');
 
-// Фото
 const recipeImgInput = document.getElementById('recipe-img');
 const fileNameText = document.getElementById('file-name-text');
 
-// Ингредиенты в форме
 const ingNameInput = document.getElementById('ing-name');
 const ingAmountInput = document.getElementById('ing-amount');
 const ingUnitInput = document.getElementById('ing-unit');
@@ -42,13 +41,11 @@ const addIngBtn = document.getElementById('add-ing-btn');
 const tempIngList = document.getElementById('temp-ing-list');
 const ingSuggestions = document.getElementById('ing-suggestions');
 
-// Корзина (Боковая панель)
 const sidebar = document.getElementById('sidebar');
 const sidebarOverlay = document.getElementById('sidebar-overlay');
 const menuBtn = document.getElementById('menu-btn');
 const closeSidebarBtn = document.getElementById('close-sidebar-btn');
 
-// Карточка деталей блюда
 const recipeCardModal = document.getElementById('recipe-card-modal');
 const closeCardBtn = document.getElementById('close-card-btn');
 const cardImg = document.getElementById('card-img');
@@ -58,51 +55,30 @@ const cardIngredientsList = document.getElementById('card-ingredients-list');
 const cardDescription = document.getElementById('card-description');
 const deleteRecipeBtn = document.getElementById('delete-recipe-btn');
 
-// Данные
 let recipes = [];
 let currentIngredients = []; 
 let selectedRecipes = {}; 
 
-// === УПРАВЛЕНИЕ ОКНАМИ И ПРОКРУТКОЙ ===
-menuBtn.addEventListener('click', () => { 
-    sidebar.classList.add('open'); 
-    sidebarOverlay.classList.add('active'); 
-    document.body.classList.add('no-scroll'); 
-});
+// === УПРАВЛЕНИЕ ОКНАМИ ===
+const openSidebar = () => { sidebar.classList.add('open'); sidebarOverlay.classList.add('active'); document.body.classList.add('no-scroll'); };
+menuBtn.addEventListener('click', openSidebar);
+floatingCartBtn.addEventListener('click', openSidebar); // Плавающая кнопка тоже открывает корзину
 
-const closeSidebar = () => { 
-    sidebar.classList.remove('open'); 
-    sidebarOverlay.classList.remove('active'); 
-    document.body.classList.remove('no-scroll'); 
-};
+const closeSidebar = () => { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('active'); document.body.classList.remove('no-scroll'); };
 closeSidebarBtn.addEventListener('click', closeSidebar);
 sidebarOverlay.addEventListener('click', closeSidebar);
 
-openAddModalBtn.addEventListener('click', () => { 
-    addRecipeModal.style.display = 'flex'; 
-    document.body.classList.add('no-scroll'); 
-});
-
-closeAddModalBtn.addEventListener('click', () => { 
-    addRecipeModal.style.display = 'none'; 
-    document.body.classList.remove('no-scroll'); 
-});
-
-closeCardBtn.addEventListener('click', () => { 
-    recipeCardModal.style.display = 'none'; 
-    document.body.classList.remove('no-scroll'); 
-});
+openAddModalBtn.addEventListener('click', () => { addRecipeModal.style.display = 'flex'; document.body.classList.add('no-scroll'); });
+closeAddModalBtn.addEventListener('click', () => { addRecipeModal.style.display = 'none'; document.body.classList.remove('no-scroll'); });
+closeCardBtn.addEventListener('click', () => { recipeCardModal.style.display = 'none'; document.body.classList.remove('no-scroll'); });
 
 window.addEventListener('click', (e) => {
     if(e.target === addRecipeModal) { addRecipeModal.style.display = 'none'; document.body.classList.remove('no-scroll'); }
     if(e.target === recipeCardModal) { recipeCardModal.style.display = 'none'; document.body.classList.remove('no-scroll'); }
 });
 
-recipeImgInput.addEventListener('change', () => {
-    fileNameText.textContent = recipeImgInput.files[0] ? recipeImgInput.files[0].name : "";
-});
+recipeImgInput.addEventListener('change', () => { fileNameText.textContent = recipeImgInput.files[0] ? recipeImgInput.files[0].name : ""; });
 
-// === СЖАТИЕ ФОТО ===
 function compressImage(file) {
     return new Promise((resolve) => {
         const reader = new FileReader();
@@ -112,8 +88,7 @@ function compressImage(file) {
             img.src = event.target.result;
             img.onload = function() {
                 const canvas = document.createElement('canvas');
-                const SIZE = 400; 
-                canvas.width = SIZE; canvas.height = SIZE;
+                const SIZE = 400; canvas.width = SIZE; canvas.height = SIZE;
                 const ctx = canvas.getContext('2d');
                 const minSide = Math.min(img.width, img.height);
                 const sx = (img.width - minSide) / 2;
@@ -134,20 +109,17 @@ async function loadRecipes() {
         recipeData.id = doc.id;
         recipes.push(recipeData);
     });
-    
-    renderCategoryFilters(); // Создаем кнопки-фильтры
-    displayRecipeGrid();     // Рисуем карточки
+    renderCategoryFilters(); 
+    displayRecipeGrid();     
     updateIngredientSuggestions();
 }
 
-// === ВРЕМЕННЫЙ СПИСОК ИНГРЕДИЕНТОВ ===
 function renderTempIngredients() {
     tempIngList.innerHTML = '';
     currentIngredients.forEach(function(ing, index) {
         const li = document.createElement('li');
         const textSpan = document.createElement('span');
         textSpan.textContent = `${ing.name} — ${ing.amount} ${ing.unit}`;
-
         const btnContainer = document.createElement('div');
         btnContainer.style.display = 'flex'; btnContainer.style.gap = '5px';
 
@@ -160,9 +132,7 @@ function renderTempIngredients() {
 
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = '✕'; deleteBtn.className = 'icon-btn';
-        deleteBtn.addEventListener('click', function() {
-            currentIngredients.splice(index, 1); renderTempIngredients();
-        });
+        deleteBtn.addEventListener('click', function() { currentIngredients.splice(index, 1); renderTempIngredients(); });
 
         btnContainer.appendChild(editBtn); btnContainer.appendChild(deleteBtn);
         li.appendChild(textSpan); li.appendChild(btnContainer); tempIngList.appendChild(li);
@@ -179,7 +149,7 @@ addIngBtn.addEventListener('click', function() {
     ingNameInput.value = ''; ingAmountInput.value = '';
 });
 
-// === СОХРАНЕНИЕ НОВОГО БЛЮДА ===
+// === СОХРАНЕНИЕ ===
 addRecipeBtn.addEventListener('click', async function() {
     const recipeName = recipeNameInput.value.trim();
     const recipeCategory = recipeCategoryInput.value;
@@ -193,38 +163,24 @@ addRecipeBtn.addEventListener('click', async function() {
     let imgBase64 = "";
     if (recipeImgInput.files[0]) imgBase64 = await compressImage(recipeImgInput.files[0]);
 
-    await addDoc(collection(db, "recipes"), { 
-        name: recipeName, 
-        category: recipeCategory,
-        description: recipeDesc,
-        ingredients: currentIngredients, 
-        image: imgBase64 
-    });
+    await addDoc(collection(db, "recipes"), { name: recipeName, category: recipeCategory, description: recipeDesc, ingredients: currentIngredients, image: imgBase64 });
 
     recipeNameInput.value = ''; recipeCategoryInput.value = ''; recipeDescriptionInput.value = '';
     recipeImgInput.value = ''; fileNameText.textContent = '';
     currentIngredients = []; tempIngList.innerHTML = '';
     addRecipeBtn.disabled = false; addRecipeBtn.textContent = 'Сохранить готовый рецепт';
     
-    addRecipeModal.style.display = 'none'; 
-    document.body.classList.remove('no-scroll'); 
-    
-    searchInput.value = ''; // Сбрасываем поиск при добавлении
+    addRecipeModal.style.display = 'none'; document.body.classList.remove('no-scroll'); 
+    searchInput.value = ''; 
     loadRecipes(); 
 });
 
-// === СОЗДАНИЕ КНОПОК ФИЛЬТРОВ И ЛОГИКА ПРОКРУТКИ ===
 function renderCategoryFilters() {
-    // Собираем уникальные категории из всех блюд
     const uniqueCats = new Set();
     recipes.forEach(r => uniqueCats.add(r.category || 'Без категории'));
-    
-    // Сортируем по алфавиту
     const sortedCats = Array.from(uniqueCats).sort();
 
-    // Всегда первая кнопка "Все"
     categoryFilters.innerHTML = '<button class="filter-btn active" data-category="Все">Все</button>';
-    
     sortedCats.forEach(cat => {
         const btn = document.createElement('button');
         btn.className = 'filter-btn';
@@ -233,20 +189,16 @@ function renderCategoryFilters() {
         categoryFilters.appendChild(btn);
     });
 
-    // Навешиваем логику клика (скроллинг к нужной секции)
     const btns = categoryFilters.querySelectorAll('.filter-btn');
     btns.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Переключаем синий цвет на активную кнопку
             btns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
             const catName = btn.dataset.category;
-            
             if (catName === 'Все') {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
-                // Ищем секцию с таким же заголовком и скроллим к ней
                 const sections = document.querySelectorAll('.category-section');
                 const targetSection = Array.from(sections).find(sec => sec.querySelector('.category-header').textContent === catName);
                 if (targetSection) {
@@ -257,29 +209,23 @@ function renderCategoryFilters() {
     });
 }
 
-// === ЖИВОЙ ПОИСК БЛЮД ===
 searchInput.addEventListener('input', (e) => {
     const query = e.target.value.trim().toLowerCase();
     displayRecipeGrid(query);
 });
 
-// === ОТОБРАЖЕНИЕ ВИТРИНЫ (С УЧЕТОМ ПОИСКА) ===
+// === ОТОБРАЖЕНИЕ ВИТРИНЫ ===
 function displayRecipeGrid(searchQuery = '') {
     recipeGrid.innerHTML = '';
     const categories = {};
     
     recipes.forEach(function(recipe) {
-        // Если что-то введено в поиск, ищем совпадения в названии
-        if (searchQuery && !recipe.name.toLowerCase().includes(searchQuery)) {
-            return; // Пропускаем блюдо, если оно не подходит под поиск
-        }
-
+        if (searchQuery && !recipe.name.toLowerCase().includes(searchQuery)) return;
         const cat = recipe.category || 'Без категории'; 
         if (!categories[cat]) { categories[cat] = []; }
         categories[cat].push(recipe);
     });
 
-    // Если после поиска ничего не найдено
     if (Object.keys(categories).length === 0) {
         recipeGrid.innerHTML = '<p style="text-align:center; color:#6b7280; margin-top:30px; width:100%;">По вашему запросу ничего не найдено 🤷‍♂️</p>';
         return;
@@ -318,23 +264,40 @@ function displayRecipeGrid(searchQuery = '') {
             titleSpan.className = 'dish-card-title';
             titleSpan.textContent = recipe.name;
 
-            const addToCartBtn = document.createElement('button');
-            addToCartBtn.className = 'add-to-cart-btn';
-            addToCartBtn.textContent = selectedRecipes[recipe.id] ? 'В корзине' : '+ В корзину';
+            const actionWrap = document.createElement('div');
+            actionWrap.className = 'card-action-wrap';
 
-            addToCartBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (selectedRecipes[recipe.id]) {
-                    delete selectedRecipes[recipe.id];
-                } else {
+            if (selectedRecipes[recipe.id]) {
+                actionWrap.innerHTML = `
+                    <div class="cart-counter-controls">
+                        <button class="cart-counter-btn card-minus">-</button>
+                        <span class="cart-counter-value">${selectedRecipes[recipe.id]}</span>
+                        <button class="cart-counter-btn card-plus">+</button>
+                    </div>
+                `;
+                actionWrap.querySelector('.card-minus').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (selectedRecipes[recipe.id] > 1) { selectedRecipes[recipe.id]--; } 
+                    else { delete selectedRecipes[recipe.id]; }
+                    calculateShoppingList();
+                    displayRecipeGrid(searchInput.value.trim().toLowerCase());
+                });
+                actionWrap.querySelector('.card-plus').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectedRecipes[recipe.id]++;
+                    calculateShoppingList();
+                    displayRecipeGrid(searchInput.value.trim().toLowerCase());
+                });
+            } else {
+                actionWrap.innerHTML = `<button class="add-to-cart-btn">+ В корзину</button>`;
+                actionWrap.querySelector('.add-to-cart-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
                     selectedRecipes[recipe.id] = 1;
-                }
-                calculateShoppingList();
-                // Обновляем витрину с учетом текущего поиска, чтобы не сбросился
-                displayRecipeGrid(searchInput.value.trim().toLowerCase());
-            });
+                    calculateShoppingList();
+                    displayRecipeGrid(searchInput.value.trim().toLowerCase());
+                });
+            }
 
-            // ОТКРЫТИЕ ПОЛНОЙ КАРТОЧКИ
             const openCard = function() {
                 cardImg.src = recipe.image || defaultImg;
                 cardTitle.textContent = recipe.name;
@@ -348,8 +311,7 @@ function displayRecipeGrid(searchQuery = '') {
                 cardDescription.textContent = recipe.description || 'Описание отсутствует.';
                 
                 deleteRecipeBtn.onclick = async function() {
-                    const confirmDelete = confirm(`Вы уверены, что хотите навсегда удалить рецепт "${recipe.name}"?`);
-                    if (confirmDelete) {
+                    if (confirm(`Вы уверены, что хотите навсегда удалить рецепт "${recipe.name}"?`)) {
                         await deleteDoc(doc(db, "recipes", recipe.id));
                         delete selectedRecipes[recipe.id]; 
                         recipeCardModal.style.display = 'none'; 
@@ -368,10 +330,10 @@ function displayRecipeGrid(searchQuery = '') {
 
             infoDiv.appendChild(categorySpan);
             infoDiv.appendChild(titleSpan);
-            infoDiv.appendChild(addToCartBtn);
+            infoDiv.appendChild(actionWrap); 
+            
             card.appendChild(img);
             card.appendChild(infoDiv);
-            
             grid.appendChild(card); 
         });
 
@@ -380,18 +342,22 @@ function displayRecipeGrid(searchQuery = '') {
     });
 }
 
-// === ПОДСЧЕТ ПРОДУКТОВ В КОРЗИНЕ ===
+// === ПОДСЧЕТ ПРОДУКТОВ И ОБНОВЛЕНИЕ КНОПОК ===
 function calculateShoppingList() {
     shoppingList.innerHTML = ''; 
     const selectedIds = Object.keys(selectedRecipes);
     
+    // Прячем или показываем плавающую кнопку
     if (selectedIds.length === 0) { 
         shoppingList.innerHTML = '<li>Пока пусто</li>'; 
         menuBtn.textContent = '☰ Корзина';
+        floatingCartBtn.classList.remove('visible'); // Прячем
         return; 
     }
 
     menuBtn.textContent = `☰ Корзина (${selectedIds.length})`;
+    floatingCartBtn.textContent = `☰ Корзина (${selectedIds.length})`;
+    floatingCartBtn.classList.add('visible'); // Показываем
 
     const dishTitle = document.createElement('div');
     dishTitle.className = 'sidebar-section-title';
@@ -410,17 +376,24 @@ function calculateShoppingList() {
         item.innerHTML = `
             <span class="selected-dish-name">${recipe.name}</span>
             <div class="selected-dish-controls">
-                <input type="number" class="sidebar-portion-input" value="${selectedRecipes[id]}" min="1">
+                <button class="sidebar-qty-btn minus-sidebar">-</button>
+                <span class="sidebar-qty-val">${selectedRecipes[id]}</span>
+                <button class="sidebar-qty-btn plus-sidebar">+</button>
                 <span class="remove-from-cart">✕</span>
             </div>
         `;
 
-        const input = item.querySelector('input');
-        input.addEventListener('input', () => {
-            let val = parseInt(input.value);
-            if (val < 1 || isNaN(val)) val = 1;
-            selectedRecipes[id] = val;
-            calculateShoppingList(); 
+        item.querySelector('.minus-sidebar').addEventListener('click', () => {
+            if (selectedRecipes[id] > 1) { selectedRecipes[id]--; } 
+            else { delete selectedRecipes[id]; }
+            calculateShoppingList();
+            displayRecipeGrid(searchInput.value.trim().toLowerCase());
+        });
+
+        item.querySelector('.plus-sidebar').addEventListener('click', () => {
+            selectedRecipes[id]++;
+            calculateShoppingList();
+            displayRecipeGrid(searchInput.value.trim().toLowerCase());
         });
 
         item.querySelector('.remove-from-cart').addEventListener('click', () => {
@@ -486,7 +459,6 @@ copyBtn.addEventListener('click', function() {
     });
 });
 
-// Автодополнение
 function updateIngredientSuggestions() {
     let uniqueIngredients = new Set();
     recipes.forEach(function(recipe) {
@@ -504,7 +476,6 @@ function updateIngredientSuggestions() {
     });
 }
 
-// Тема
 const themeBtn = document.getElementById('theme-btn');
 if (localStorage.getItem('app-theme') === 'dark') { document.body.classList.add('dark-theme'); themeBtn.textContent = 'Светлая тема'; }
 themeBtn.addEventListener('click', function() {
@@ -514,5 +485,4 @@ themeBtn.addEventListener('click', function() {
     } else { themeBtn.textContent = 'Тёмная тема'; localStorage.setItem('app-theme', 'light'); }
 });
 
-// Запуск
 loadRecipes();
