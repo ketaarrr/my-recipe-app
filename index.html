@@ -3,57 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мои Рецепты</title>
+    <title>Моя Кулинарная Книга</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2>Список продуктов</h2>
+            <button id="close-sidebar-btn" class="close-btn">✕</button>
+        </div>
+        <ul id="shopping-list">
+            <li>Пока пусто</li>
+        </ul>
+        <button id="copy-btn" class="sidebar-action-btn">Скопировать список</button>
+    </div>
+
     <div class="container">
         <header class="header-container">
-            <h1>🍽️ Меню и покупки</h1>
-            <button id="theme-btn" class="theme-btn">🌙 Тёмная тема</button>
+            <div class="header-left">
+                <button id="menu-btn" class="menu-btn">☰ Корзина</button>
+                <button id="open-add-modal-btn" class="add-dish-btn">+ Добавить блюдо</button>
+            </div>
+            <button id="theme-btn" class="theme-btn">Тёмная тема</button>
         </header>
         
         <main>
-            <section class="recipes-section">
-                <h2>Мои рецепты</h2>
-                
-                <div class="add-recipe-form">
-                    <input type="text" id="recipe-name" placeholder="Название блюда (например, Блинчики)...">
-                    
-                    <div class="ingredient-row">
-                        <input type="text" id="ing-name" placeholder="Ингредиент..." list="ing-suggestions">
-                        <datalist id="ing-suggestions"></datalist>
-                        <input type="number" id="ing-amount" placeholder="Кол-во">
-                        <select id="ing-unit">
-                            <option value="шт">шт</option>
-                            <option value="г">г</option>
-                            <option value="кг">кг</option>
-                            <option value="мл">мл</option>
-                            <option value="л">л</option>
-                            <option value="ст.л.">ст.л.</option>
-                        </select>
-                        <button id="add-ing-btn" type="button">+</button>
-                    </div>
-                    
-                    <ul id="temp-ing-list"></ul>
+            <div id="recipe-grid" class="recipe-grid"></div>
+        </main>
+    </div>
 
-                    <button id="add-recipe-btn">Сохранить готовый рецепт</button>
+    <div id="add-recipe-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="close-add-modal-btn" class="close-card-btn">✕</button>
+            <h2>Новое блюдо</h2>
+            
+            <div class="add-recipe-form">
+                <input type="text" id="recipe-name" placeholder="Название блюда (например, Блинчики)...">
+                
+                <select id="recipe-category">
+                    <option value="" disabled selected>Выберите категорию...</option>
+                    <option value="Завтраки">Завтраки</option>
+                    <option value="Супы">Супы</option>
+                    <option value="Горячее">Горячее</option>
+                    <option value="Салаты">Салаты</option>
+                    <option value="Десерты">Десерты</option>
+                    <option value="Выпечка">Выпечка</option>
+                </select>
+
+                <div class="file-upload-wrapper">
+                    <label for="recipe-img" class="file-upload-btn">📸 Добавить фото</label>
+                    <input type="file" id="recipe-img" accept="image/*" style="display:none;">
+                    <span id="file-name-text"></span>
                 </div>
 
-                <ul id="recipe-list">
-                    </ul>
-            </section>
+                <div class="ingredient-row">
+                    <input type="text" id="ing-name" placeholder="Ингредиент..." list="ing-suggestions">
+                    <datalist id="ing-suggestions"></datalist>
+                    
+                    <input type="number" id="ing-amount" placeholder="Кол-во">
+                    <select id="ing-unit">
+                        <option value="шт">шт</option>
+                        <option value="г">г</option>
+                        <option value="кг">кг</option>
+                        <option value="мл">мл</option>
+                        <option value="л">л</option>
+                        <option value="ст.л.">ст.л.</option>
+                    </select>
+                    <button id="add-ing-btn" type="button">+</button>
+                </div>
+                
+                <ul id="temp-ing-list"></ul>
 
-            <section class="shopping-list-section">
-                <h2>🛒 Список продуктов</h2>
+                <textarea id="recipe-description" placeholder="Описание и способ приготовления..."></textarea>
+
+                <button id="add-recipe-btn">Сохранить готовый рецепт</button>
+            </div>
+        </div>
+    </div>
+
+<div id="recipe-card-modal" class="modal-overlay">
+        <div class="recipe-card">
+            <button id="close-card-btn" class="close-card-btn">✕</button>
+            <img id="card-img" src="" alt="Фото блюда">
+            <div class="recipe-card-content">
+                <div class="card-meta-row">
+                    <span id="card-category" class="badge">Категория</span>
+                </div>
+                <h2 id="card-title">Название блюда</h2>
                 
-                <ul id="shopping-list">
-                    <li>Пока пусто</li>
-                </ul>
+                <h3>Ингредиенты:</h3>
+                <ul id="card-ingredients-list"></ul>
                 
-                <button id="copy-btn">Скопировать список</button>
-            </section>
-        </main>
+                <h3>Способ приготовления:</h3>
+                <p id="card-description">Здесь будет инструкция...</p>
+                
+                <button id="delete-recipe-btn" class="delete-recipe-btn">Удалить рецепт</button>
+            </div>
+        </div>
     </div>
 
     <script type="module" src="script.js"></script>
