@@ -127,7 +127,7 @@ button:active { transform: scale(0.98); }
 }
 
 .dish-card-info {
-    padding: 15px 15px 5px 15px; /* Уменьшили отступ снизу, чтобы вместить порции */
+    padding: 15px;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
@@ -136,13 +136,6 @@ button:active { transform: scale(0.98); }
 .dish-card-category { font-size: 0.75em; text-transform: uppercase; color: #6b7280; letter-spacing: 0.5px; margin-bottom: 5px; font-weight: bold; }
 .dish-card-title { font-size: 1.15em; margin: 0 0 10px 0; color: #1f2937; cursor: pointer; }
 .dish-card-title:hover { color: #3b82f6; }
-
-.dish-card-info {
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-}
 
 /* Кнопка снова на всю ширину */
 .add-to-cart-btn {
@@ -153,6 +146,17 @@ button:active { transform: scale(0.98); }
     color: #4b5563;
     font-size: 0.95em;
     border-radius: 6px;
+}
+
+/* === НОВОЕ: Состояние, когда блюдо УЖЕ в корзине === */
+.dish-card.selected-dish {
+    border: 2px solid #10b981;
+}
+.dish-card.selected-dish .add-to-cart-btn {
+    background-color: #10b981;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); /* Легкое свечение */
 }
 
 /* === ВЫЕЗЖАЮЩАЯ КОРЗИНА (SIDEBAR) === */
@@ -339,12 +343,13 @@ body.no-scroll {
     overflow: hidden;
 }
 
-/* === МОБИЛЬНАЯ АДАПТАЦИЯ === */
+/* === НОВОЕ: МОБИЛЬНАЯ АДАПТАЦИЯ (СЕТКА) === */
 @media (max-width: 480px) {
     .header-container {
         flex-direction: column;
         align-items: stretch;
         gap: 12px;
+        margin-bottom: 20px;
     }
     
     .header-left {
@@ -365,5 +370,33 @@ body.no-scroll {
     .theme-btn {
         width: 100%;
         padding: 12px;
+    }
+
+    /* 2 карточки в ряд */
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr); /* Ровно 2 колонки */
+        gap: 10px; /* Уменьшаем расстояние между карточками */
+    }
+
+    .dish-card-img {
+        height: 110px; /* Делаем картинку пониже, чтобы влезла на экран */
+    }
+
+    .dish-card-info {
+        padding: 10px; /* Уменьшаем внутренние отступы */
+    }
+
+    .dish-card-title {
+        font-size: 0.95em; /* Уменьшаем шрифт заголовка */
+        margin-bottom: 10px;
+    }
+
+    .dish-card-category {
+        font-size: 0.65em;
+    }
+
+    .add-to-cart-btn {
+        padding: 8px;
+        font-size: 0.85em; /* Делаем кнопку компактнее */
     }
 }
