@@ -8,8 +8,9 @@
 </head>
 <body>
     <div class="container">
-        <header>
+        <header class="header-container">
             <h1>🍽️ Меню и покупки</h1>
+            <button id="theme-btn" class="theme-btn">🌙 Тёмная тема</button>
         </header>
         
         <main>
@@ -20,7 +21,8 @@
                     <input type="text" id="recipe-name" placeholder="Название блюда (например, Блинчики)...">
                     
                     <div class="ingredient-row">
-                        <input type="text" id="ing-name" placeholder="Ингредиент...">
+                        <input type="text" id="ing-name" placeholder="Ингредиент..." list="ing-suggestions">
+                        <datalist id="ing-suggestions"></datalist>
                         <input type="number" id="ing-amount" placeholder="Кол-во">
                         <select id="ing-unit">
                             <option value="шт">шт</option>

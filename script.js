@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Твои настройки FIREBASE
+// !!! ВСТАВЬ СЮДА СВОИ НАСТРОЙКИ FIREBASE !!!
 const firebaseConfig = {
   apiKey: "AIzaSyC9fOeRLDpFjRxZE04EEXot5ri5OVxosLY",
   authDomain: "recipe-app-my.firebaseapp.com",
@@ -22,9 +22,8 @@ const shoppingList = document.getElementById('shopping-list');
 const recipeNameInput = document.getElementById('recipe-name');
 const addRecipeBtn = document.getElementById('add-recipe-btn');
 const copyBtn = document.getElementById('copy-btn');
-
-// НОВЫЕ элементы для ингредиентов
 const ingNameInput = document.getElementById('ing-name');
+const ingSuggestions = document.getElementById('ing-suggestions');
 const ingAmountInput = document.getElementById('ing-amount');
 const ingUnitInput = document.getElementById('ing-unit');
 const addIngBtn = document.getElementById('add-ing-btn');
@@ -32,8 +31,10 @@ const tempIngList = document.getElementById('temp-ing-list');
 
 // Массивы для данных
 let recipes = [];
-let selectedRecipeIds = [];
-let currentIngredients = []; // Временная копилка для ингредиентов создаваемого рецепта
+let currentIngredients = []; 
+
+// === НОВОЕ: ТЕПЕРЬ ЭТО СЛОВАРЬ { 'id_рецепта': количество_порций } ===
+let selectedRecipes = {}; 
 
 // === 1. ЗАГРУЗКА ИЗ ОБЛАКА ===
 async function loadRecipes() {
@@ -45,15 +46,97 @@ async function loadRecipes() {
         recipes.push(recipeData);
     });
     displayRecipes();
+    updateIngredientSuggestions();
 }
 
-// === 2. ДОБАВЛЕНИЕ ИНГРЕДИЕНТА В СПИСОК (КНОПКА "+") ===
+
+// === ФУНКЦИЯ ДЛЯ ОБНОВЛЕНИЯ ПОДСКАЗОК ИНГРЕДИЕНТОВ ===
+function updateIngredientSuggestions() {
+    let uniqueIngredients = new Set(); // Set - это специальный массив, который автоматически удаляет дубликаты
+
+    // Проходим по всем загруженным рецептам
+    recipes.forEach(function(recipe) {
+        if (recipe.ingredients) {
+            recipe.ingredients.forEach(function(ing) {
+                // Делаем первую букву заглавной, а остальные строчными (Молоко), чтобы всё было красиво
+                let formattedName = ing.name.charAt(0).toUpperCase() + ing.name.slice(1).toLowerCase();
+                uniqueIngredients.add(formattedName);
+            });
+        }
+    });
+
+    // Очищаем старые подсказки
+    ingSuggestions.innerHTML = '';
+
+    // Добавляем новые подсказки в HTML
+    uniqueIngredients.forEach(function(ingName) {
+        const option = document.createElement('option');
+        option.value = ingName;
+        ingSuggestions.appendChild(option);
+    });
+}
+
+// === 2. ВРЕМЕННЫЙ СПИСОК ИНГРЕДИЕНТОВ ===
+
+// Функция, которая рисует список перед сохранением
+function renderTempIngredients() {
+    tempIngList.innerHTML = ''; // Очищаем экран
+
+    currentIngredients.forEach(function(ing, index) {
+        const li = document.createElement('li');
+        
+        const textSpan = document.createElement('span');
+        textSpan.textContent = `${ing.name} — ${ing.amount} ${ing.unit}`;
+
+        // Контейнер для кнопок
+        const btnContainer = document.createElement('div');
+        btnContainer.style.display = 'flex';
+        btnContainer.style.gap = '5px';
+
+        // Кнопка редактирования
+        const editBtn = document.createElement('button');
+        editBtn.textContent = '✏️';
+        editBtn.className = 'icon-btn';
+        editBtn.title = 'Редактировать';
+        editBtn.addEventListener('click', function() {
+            // 1. Возвращаем данные обратно в поля ввода
+            ingNameInput.value = ing.name;
+            ingAmountInput.value = ing.amount;
+            ingUnitInput.value = ing.unit;
+            
+            // 2. Удаляем этот элемент из копилки
+            currentIngredients.splice(index, 1);
+            
+            // 3. Перерисовываем список (он исчезнет с экрана)
+            renderTempIngredients();
+        });
+
+        // Кнопка удаления
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '❌';
+        deleteBtn.className = 'icon-btn';
+        deleteBtn.title = 'Удалить';
+        deleteBtn.addEventListener('click', function() {
+            // Просто удаляем из копилки и перерисовываем
+            currentIngredients.splice(index, 1);
+            renderTempIngredients();
+        });
+
+        btnContainer.appendChild(editBtn);
+        btnContainer.appendChild(deleteBtn);
+
+        li.appendChild(textSpan);
+        li.appendChild(btnContainer);
+        tempIngList.appendChild(li);
+    });
+}
+
+// Логика кнопки "+"
 addIngBtn.addEventListener('click', function() {
     const name = ingNameInput.value.trim();
-    const amount = parseFloat(ingAmountInput.value); // Превращаем текст в число
+    const amount = parseFloat(ingAmountInput.value); 
     const unit = ingUnitInput.value;
 
-    // Проверяем, чтобы пользователь ввел правильные данные
     if (name === '' || isNaN(amount) || amount <= 0) {
         alert('Пожалуйста, введите правильное название и количество ингредиента!');
         return;
@@ -62,12 +145,10 @@ addIngBtn.addEventListener('click', function() {
     // Кладем в копилку
     currentIngredients.push({ name: name, amount: amount, unit: unit });
 
-    // Рисуем на экране, чтобы пользователь видел, что добавил
-    const li = document.createElement('li');
-    li.textContent = `${name} — ${amount} ${unit}`;
-    tempIngList.appendChild(li);
+    // Рисуем обновленный список
+    renderTempIngredients();
 
-    // Очищаем поля для следующего ингредиента
+    // Очищаем поля ввода для следующего продукта
     ingNameInput.value = '';
     ingAmountInput.value = '';
 });
@@ -75,103 +156,131 @@ addIngBtn.addEventListener('click', function() {
 // === 3. СОХРАНЕНИЕ ГОТОВОГО РЕЦЕПТА ===
 addRecipeBtn.addEventListener('click', async function() {
     const recipeName = recipeNameInput.value.trim();
-    
     if (recipeName === '') {
         alert('Пожалуйста, введите название блюда!');
         return;
     }
-    
     if (currentIngredients.length === 0) {
         alert('Добавьте хотя бы один ингредиент через кнопку "+"!');
         return;
     }
 
-    // Создаем новый документ в облаке с НАСТОЯЩИМИ ингредиентами
     await addDoc(collection(db, "recipes"), {
         name: recipeName,
         ingredients: currentIngredients
     });
 
-    // Полностью очищаем форму
     recipeNameInput.value = '';
     currentIngredients = [];
     tempIngList.innerHTML = '';
-    
-    loadRecipes(); // Скачиваем обновленный список
+    loadRecipes(); 
 });
 
-// === 4. ОТОБРАЖЕНИЕ РЕЦЕПТОВ ===
+// === 4. ОТОБРАЖЕНИЕ РЕЦЕПТОВ С ПОРЦИЯМИ ===
 function displayRecipes() {
     recipeList.innerHTML = '';
     recipes.forEach(function(recipe) {
         const li = document.createElement('li');
+
+        // Обертка для левой части (чтобы элементы стояли в ряд)
+        const leftWrap = document.createElement('div');
+        leftWrap.className = 'recipe-item-left';
+
         const label = document.createElement('label');
-        
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.value = recipe.id;
+
+        // Создаем поле ввода порций
+        const portionInput = document.createElement('input');
+        portionInput.type = 'number';
+        portionInput.min = '1';
+        portionInput.value = selectedRecipes[recipe.id] || 1;
+        portionInput.className = 'portion-input';
         
-        // Запоминаем галочку, если рецепт был выбран до обновления списка
-        if (selectedRecipeIds.includes(recipe.id)) {
+        // По умолчанию поле выключено, пока не поставят галочку
+        portionInput.disabled = !selectedRecipes[recipe.id]; 
+
+        // Восстанавливаем галочку, если рецепт был выбран
+        if (selectedRecipes[recipe.id]) {
             checkbox.checked = true;
         }
-        
+
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(' ' + recipe.name));
+
+        const portionText = document.createElement('span');
+        portionText.textContent = 'порц.';
+        portionText.className = 'portion-text';
+
+        // Логика нажатия на галочку
         checkbox.addEventListener('change', function() {
+            portionInput.disabled = !checkbox.checked; // Включаем/выключаем поле порций
+            
             if (checkbox.checked) {
-                selectedRecipeIds.push(checkbox.value);
+                selectedRecipes[recipe.id] = parseInt(portionInput.value) || 1;
             } else {
-                selectedRecipeIds = selectedRecipeIds.filter(id => id !== checkbox.value);
+                delete selectedRecipes[recipe.id]; // Удаляем из словаря
             }
             calculateShoppingList();
         });
 
-        label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(' ' + recipe.name));
-        
-        // --- НОВОЕ: КНОПКА УДАЛЕНИЯ ---
+        // Логика изменения цифры порций
+        portionInput.addEventListener('input', function() {
+            if (checkbox.checked) {
+                let val = parseInt(portionInput.value);
+                if (val < 1 || isNaN(val)) val = 1;
+                selectedRecipes[recipe.id] = val; // Обновляем количество
+                calculateShoppingList(); // Сразу пересчитываем продукты!
+            }
+        });
+
+        // Запрещаем клику по цифрам случайно нажимать на галочку
+        portionInput.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        leftWrap.appendChild(label);
+        leftWrap.appendChild(portionInput);
+        leftWrap.appendChild(portionText);
+
+        // Кнопка удаления
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Удалить';
         deleteBtn.className = 'delete-btn';
-        
+
         deleteBtn.addEventListener('click', async function() {
-            // Спрашиваем подтверждение
             const isConfirmed = confirm(`Точно удалить рецепт "${recipe.name}"?`);
-            
             if (isConfirmed) {
-                // 1. Удаляем из Firebase
                 await deleteDoc(doc(db, "recipes", recipe.id));
-                
-                // 2. Убираем ID из корзины (чтобы продукты исчезли из списка покупок)
-                selectedRecipeIds = selectedRecipeIds.filter(id => id !== recipe.id);
-                
-                // 3. Обновляем экран
+                delete selectedRecipes[recipe.id];
                 loadRecipes();
                 calculateShoppingList();
             }
         });
 
-        // Кладем всё внутрь <li>
-        li.appendChild(label);
+        li.appendChild(leftWrap);
         li.appendChild(deleteBtn);
         recipeList.appendChild(li);
     });
 }
 
-// === 5. ПОДСЧЕТ ИНГРЕДИЕНТОВ ===
+// === 5. ПОДСЧЕТ ИНГРЕДИЕНТОВ С УМНОЖЕНИЕМ НА ПОРЦИИ ===
 function calculateShoppingList() {
     let finalIngredients = {};
 
-    selectedRecipeIds.forEach(function(id) {
+    // Проходим по ключам (ID) в нашем словаре
+    Object.keys(selectedRecipes).forEach(function(id) {
+        const portions = selectedRecipes[id]; // Достаем количество порций
         const recipe = recipes.find(r => r.id === id);
         
         if (recipe && recipe.ingredients) {
             recipe.ingredients.forEach(function(ing) {
                 
                 let normalizedName = ing.name;
-                let normalizedAmount = ing.amount;
+                // САМОЕ ГЛАВНОЕ: Умножаем базовое количество на порции!
+                let normalizedAmount = ing.amount * portions; 
                 let normalizedUnit = ing.unit;
 
-                // 1. Умная конвертация объемов и весов
                 if (normalizedUnit === 'л') {
                     normalizedAmount = normalizedAmount * 1000;
                     normalizedUnit = 'мл';
@@ -180,13 +289,11 @@ function calculateShoppingList() {
                     normalizedUnit = 'г';
                 }
 
-                // 2. Делаем имя в нижнем регистре для создания ключа (молоко === Молоко)
                 let key = normalizedName.toLowerCase() + '_' + normalizedUnit;
                 
                 if (finalIngredients[key]) {
                     finalIngredients[key].amount += normalizedAmount;
                 } else {
-                    // Сохраняем оригинальное имя с заглавной буквы для красоты в списке
                     finalIngredients[key] = { name: normalizedName, amount: normalizedAmount, unit: normalizedUnit };
                 }
             });
@@ -203,7 +310,6 @@ function calculateShoppingList() {
 
     items.forEach(function(item) {
         const li = document.createElement('li');
-        // Бонус: если миллилитров больше 1000, показываем их красиво (например, 1.7 л)
         let displayAmount = item.amount;
         let displayUnit = item.unit;
         
@@ -238,9 +344,28 @@ copyBtn.addEventListener('click', function() {
         copyBtn.style.backgroundColor = '#4caf50';
         setTimeout(function() {
             copyBtn.textContent = originalText;
-            copyBtn.style.backgroundColor = '#ff6b6b';
+            copyBtn.style.backgroundColor = '#3b82f6'; // Возвращаем наш новый голубой цвет
         }, 2000);
     });
+});
+
+// === 7. СМЕНА ТЕМЫ (DARK MODE) ===
+const themeBtn = document.getElementById('theme-btn');
+
+if (localStorage.getItem('app-theme') === 'dark') {
+    document.body.classList.add('dark-theme');
+    themeBtn.textContent = '☀️ Светлая тема';
+}
+
+themeBtn.addEventListener('click', function() {
+    document.body.classList.toggle('dark-theme');
+    if (document.body.classList.contains('dark-theme')) {
+        themeBtn.textContent = '☀️ Светлая тема';
+        localStorage.setItem('app-theme', 'dark');
+    } else {
+        themeBtn.textContent = '🌙 Тёмная тема';
+        localStorage.setItem('app-theme', 'light');
+    }
 });
 
 // === ЗАПУСК ===

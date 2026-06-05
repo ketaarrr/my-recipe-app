@@ -125,18 +125,234 @@ li {
     align-items: center;
 }
 
+/* === КНОПКА УДАЛЕНИЯ (Спокойный дизайн) === */
 .delete-btn {
     background-color: transparent;
-    color: #ef4444; /* Оставляем красной для безопасности */
-    border: 1px solid #ef4444;
+    color: #9ca3af; /* Спокойный светло-серый цвет текста */
+    border: 1px solid #d1d5db; /* Светло-серая рамка */
     padding: 5px 10px;
     border-radius: 6px;
     font-size: 0.8em;
     cursor: pointer;
     width: auto;
+    transition: all 0.2s; /* Плавное изменение при наведении */
 }
 
+/* При наведении кнопка становится чуть заметнее, но не кричит */
 .delete-btn:hover {
-    background-color: #ef4444;
+    background-color: #f3f4f6;
+    color: #4b5563; /* Более тёмный серый */
+    border-color: #9ca3af;
+}
+
+/* Стили кнопки удаления специально для тёмной темы */
+body.dark-theme .delete-btn {
+    color: #64748b; 
+    border-color: #475569;
+}
+
+body.dark-theme .delete-btn:hover {
+    background-color: #334155;
+    color: #cbd5e1;
+    border-color: #64748b;
+}
+
+/* === ШАПКА И КНОПКА ТЕМЫ === */
+.header-container {
+    display: flex;
+    justify-content: space-between; /* Раздвигаем заголовок и кнопку по краям */
+    align-items: center;
+}
+
+.theme-btn {
+    width: auto; /* Отменяем правило широкой кнопки */
+    background-color: transparent;
+    color: #3b82f6;
+    border: 2px solid #3b82f6;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9em;
+}
+
+.theme-btn:hover {
+    background-color: #3b82f6;
     color: white;
+}
+
+/* === ЦВЕТА ТЁМНОЙ ТЕМЫ === */
+body.dark-theme {
+    background-color: #0f172a; /* Очень тёмный синий фон страницы */
+    color: #f8fafc; /* Светло-серый текст */
+}
+
+body.dark-theme section {
+    background-color: #1e293b; /* Тёмный фон карточек */
+    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+}
+
+/* Красим поля ввода в тёмный цвет */
+body.dark-theme input[type="text"], 
+body.dark-theme input[type="number"], 
+body.dark-theme select {
+    background-color: #334155;
+    color: #f8fafc;
+    border-color: #475569;
+}
+
+body.dark-theme input:focus, 
+body.dark-theme select:focus {
+    border-color: #3b82f6;
+}
+
+/* Полоски между ингредиентами */
+body.dark-theme li, 
+body.dark-theme #temp-ing-list li {
+    border-bottom-color: #334155;
+}
+
+/* Как выглядит кнопка темы, когда включен тёмный режим */
+body.dark-theme .theme-btn {
+    color: #fbbf24; /* Желтый цвет для "солнышка" */
+    border-color: #fbbf24;
+}
+
+body.dark-theme .theme-btn:hover {
+    background-color: #fbbf24;
+    color: #0f172a;
+}
+
+/* === ПОЛЕ ДЛЯ ПОРЦИЙ В СПИСКЕ === */
+.recipe-item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap; /* Строго запрещаем перенос на новую строку */
+}
+
+/* Выравниваем чекбокс и название блюда ровно по центру */
+.recipe-item-left label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap; /* Название блюда не будет сжиматься и переноситься */
+    cursor: pointer;
+}
+
+.portion-input {
+    width: 50px !important; /* Жестко перебиваем правило 100% ширины */
+    min-width: 50px;
+    padding: 4px;
+    margin-bottom: 0 !important; /* Убираем лишний отступ снизу */
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.9em;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.portion-input:focus {
+    border-color: #3b82f6;
+}
+
+.portion-input:disabled {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    border-color: #e5e7eb;
+}
+
+.portion-text {
+    font-size: 0.85em;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+/* Стили порций для тёмной темы */
+body.dark-theme .portion-input {
+    background-color: #334155;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+body.dark-theme .portion-input:disabled {
+    background-color: #1e293b;
+    color: #64748b;
+    border-color: #334155;
+}
+
+body.dark-theme .portion-text {
+    color: #94a3b8;
+}
+
+/* === ВНУТРЕННЯЯ ПРОКРУТКА ДЛЯ СПИСКОВ === */
+#recipe-list, #shopping-list {
+    max-height: 400px; /* Максимальная высота списка */
+    overflow-y: auto;  /* Включаем вертикальный ползунок, если элементов много */
+    padding-right: 5px; /* Даем немного места, чтобы ползунок не наезжал на текст */
+}
+
+/* Красивый тонкий ползунок (для браузеров Chrome, Safari, Edge) */
+#recipe-list::-webkit-scrollbar, 
+#shopping-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+/* Фон ползунка */
+#recipe-list::-webkit-scrollbar-track, 
+#shopping-list::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+    border-radius: 4px;
+}
+
+/* Сам бегунок */
+#recipe-list::-webkit-scrollbar-thumb, 
+#shopping-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1; 
+    border-radius: 4px;
+}
+
+/* Бегунок при наведении мышки */
+#recipe-list::-webkit-scrollbar-thumb:hover, 
+#shopping-list::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8; 
+}
+
+/* Стили ползунка для тёмной темы */
+body.dark-theme #recipe-list::-webkit-scrollbar-track, 
+body.dark-theme #shopping-list::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+
+body.dark-theme #recipe-list::-webkit-scrollbar-thumb, 
+body.dark-theme #shopping-list::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+/* === КНОПКИ РЕДАКТИРОВАНИЯ ВО ВРЕМЕННОМ СПИСКЕ === */
+.icon-btn {
+    background-color: transparent;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    font-size: 1.1em;
+    width: auto;
+    transition: transform 0.2s;
+}
+
+.icon-btn:hover {
+    background-color: #f3f4f6;
+    border-radius: 4px;
+    transform: scale(1.1); /* Слегка увеличиваем при наведении */
+}
+
+/* Для тёмной темы */
+body.dark-theme .icon-btn:hover {
+    background-color: #334155;
+}
+
+/* Выстраиваем текст и кнопки в ровную линию */
+#temp-ing-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
