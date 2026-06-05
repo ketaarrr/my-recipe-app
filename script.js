@@ -18,6 +18,8 @@ const db = getFirestore(app);
 const recipeGrid = document.getElementById('recipe-grid');
 const shoppingList = document.getElementById('shopping-list');
 const copyBtn = document.getElementById('copy-btn');
+const searchInput = document.getElementById('search-input'); // Поиск
+const categoryFilters = document.getElementById('category-filters'); // Фильтры
 
 // Модальное окно добавления
 const addRecipeModal = document.getElementById('add-recipe-modal');
@@ -92,14 +94,8 @@ closeCardBtn.addEventListener('click', () => {
 });
 
 window.addEventListener('click', (e) => {
-    if(e.target === addRecipeModal) {
-        addRecipeModal.style.display = 'none';
-        document.body.classList.remove('no-scroll');
-    }
-    if(e.target === recipeCardModal) {
-        recipeCardModal.style.display = 'none';
-        document.body.classList.remove('no-scroll');
-    }
+    if(e.target === addRecipeModal) { addRecipeModal.style.display = 'none'; document.body.classList.remove('no-scroll'); }
+    if(e.target === recipeCardModal) { recipeCardModal.style.display = 'none'; document.body.classList.remove('no-scroll'); }
 });
 
 recipeImgInput.addEventListener('change', () => {
@@ -138,7 +134,9 @@ async function loadRecipes() {
         recipeData.id = doc.id;
         recipes.push(recipeData);
     });
-    displayRecipeGrid();
+    
+    renderCategoryFilters(); // Создаем кнопки-фильтры
+    displayRecipeGrid();     // Рисуем карточки
     updateIngredientSuggestions();
 }
 
@@ -210,20 +208,82 @@ addRecipeBtn.addEventListener('click', async function() {
     
     addRecipeModal.style.display = 'none'; 
     document.body.classList.remove('no-scroll'); 
+    
+    searchInput.value = ''; // Сбрасываем поиск при добавлении
     loadRecipes(); 
 });
 
-// === ОТОБРАЖЕНИЕ ВИТРИНЫ ПО КАТЕГОРИЯМ ===
-function displayRecipeGrid() {
-    recipeGrid.innerHTML = '';
+// === СОЗДАНИЕ КНОПОК ФИЛЬТРОВ И ЛОГИКА ПРОКРУТКИ ===
+function renderCategoryFilters() {
+    // Собираем уникальные категории из всех блюд
+    const uniqueCats = new Set();
+    recipes.forEach(r => uniqueCats.add(r.category || 'Без категории'));
+    
+    // Сортируем по алфавиту
+    const sortedCats = Array.from(uniqueCats).sort();
 
+    // Всегда первая кнопка "Все"
+    categoryFilters.innerHTML = '<button class="filter-btn active" data-category="Все">Все</button>';
+    
+    sortedCats.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn';
+        btn.dataset.category = cat;
+        btn.textContent = cat;
+        categoryFilters.appendChild(btn);
+    });
+
+    // Навешиваем логику клика (скроллинг к нужной секции)
+    const btns = categoryFilters.querySelectorAll('.filter-btn');
+    btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Переключаем синий цвет на активную кнопку
+            btns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const catName = btn.dataset.category;
+            
+            if (catName === 'Все') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                // Ищем секцию с таким же заголовком и скроллим к ней
+                const sections = document.querySelectorAll('.category-section');
+                const targetSection = Array.from(sections).find(sec => sec.querySelector('.category-header').textContent === catName);
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        });
+    });
+}
+
+// === ЖИВОЙ ПОИСК БЛЮД ===
+searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.trim().toLowerCase();
+    displayRecipeGrid(query);
+});
+
+// === ОТОБРАЖЕНИЕ ВИТРИНЫ (С УЧЕТОМ ПОИСКА) ===
+function displayRecipeGrid(searchQuery = '') {
+    recipeGrid.innerHTML = '';
     const categories = {};
     
     recipes.forEach(function(recipe) {
+        // Если что-то введено в поиск, ищем совпадения в названии
+        if (searchQuery && !recipe.name.toLowerCase().includes(searchQuery)) {
+            return; // Пропускаем блюдо, если оно не подходит под поиск
+        }
+
         const cat = recipe.category || 'Без категории'; 
         if (!categories[cat]) { categories[cat] = []; }
         categories[cat].push(recipe);
     });
+
+    // Если после поиска ничего не найдено
+    if (Object.keys(categories).length === 0) {
+        recipeGrid.innerHTML = '<p style="text-align:center; color:#6b7280; margin-top:30px; width:100%;">По вашему запросу ничего не найдено 🤷‍♂️</p>';
+        return;
+    }
 
     Object.keys(categories).sort().forEach(function(catName) {
         const section = document.createElement('div');
@@ -270,7 +330,8 @@ function displayRecipeGrid() {
                     selectedRecipes[recipe.id] = 1;
                 }
                 calculateShoppingList();
-                displayRecipeGrid();
+                // Обновляем витрину с учетом текущего поиска, чтобы не сбросился
+                displayRecipeGrid(searchInput.value.trim().toLowerCase());
             });
 
             // ОТКРЫТИЕ ПОЛНОЙ КАРТОЧКИ
@@ -365,7 +426,7 @@ function calculateShoppingList() {
         item.querySelector('.remove-from-cart').addEventListener('click', () => {
             delete selectedRecipes[id];
             calculateShoppingList();
-            displayRecipeGrid();
+            displayRecipeGrid(searchInput.value.trim().toLowerCase());
         });
 
         shoppingList.appendChild(item);

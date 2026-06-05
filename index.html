@@ -30,6 +30,16 @@
         </header>
         
         <main>
+            <div class="controls-container">
+                <input type="text" id="search-input" class="search-input" placeholder="Поиск блюд по названию...">
+                
+                <div class="category-filter-wrapper">
+                    <div id="category-filters" class="category-filters">
+                        <button class="filter-btn active" data-category="Все">Все</button>
+                        </div>
+                </div>
+            </div>
+
             <div id="recipe-grid" class="recipe-grid"></div>
         </main>
     </div>
@@ -53,7 +63,7 @@
                 </select>
 
                 <div class="file-upload-wrapper">
-                    <label for="recipe-img" class="file-upload-btn">📸 Добавить фото</label>
+                    <label for="recipe-img" class="file-upload-btn">Добавить фото</label>
                     <input type="file" id="recipe-img" accept="image/*" style="display:none;">
                     <span id="file-name-text"></span>
                 </div>
@@ -75,15 +85,13 @@
                 </div>
                 
                 <ul id="temp-ing-list"></ul>
-
                 <textarea id="recipe-description" placeholder="Описание и способ приготовления..."></textarea>
-
                 <button id="add-recipe-btn">Сохранить готовый рецепт</button>
             </div>
         </div>
     </div>
 
-<div id="recipe-card-modal" class="modal-overlay">
+    <div id="recipe-card-modal" class="modal-overlay">
         <div class="recipe-card">
             <button id="close-card-btn" class="close-card-btn">✕</button>
             <img id="card-img" src="" alt="Фото блюда">
