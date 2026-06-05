@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои Рецепты</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍽️ Меню и покупки</h1>
+        </header>
+        
+        <main>
+            <section class="recipes-section">
+                <h2>Мои рецепты</h2>
+                
+                <div class="add-recipe-form">
+                    <input type="text" id="recipe-name" placeholder="Название блюда (например, Блинчики)...">
+                    
+                    <div class="ingredient-row">
+                        <input type="text" id="ing-name" placeholder="Ингредиент...">
+                        <input type="number" id="ing-amount" placeholder="Кол-во">
+                        <select id="ing-unit">
+                            <option value="шт">шт</option>
+                            <option value="г">г</option>
+                            <option value="кг">кг</option>
+                            <option value="мл">мл</option>
+                            <option value="л">л</option>
+                            <option value="ст.л.">ст.л.</option>
+                        </select>
+                        <button id="add-ing-btn" type="button">+</button>
+                    </div>
+                    
+                    <ul id="temp-ing-list"></ul>
+
+                    <button id="add-recipe-btn">Сохранить готовый рецепт</button>
+                </div>
+
+                <ul id="recipe-list">
+                    </ul>
+            </section>
+
+            <section class="shopping-list-section">
+                <h2>🛒 Список продуктов</h2>
+                
+                <ul id="shopping-list">
+                    <li>Пока пусто</li>
+                </ul>
+                
+                <button id="copy-btn">Скопировать список</button>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
