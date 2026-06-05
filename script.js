@@ -54,26 +54,52 @@ const cardTitle = document.getElementById('card-title');
 const cardCategory = document.getElementById('card-category');
 const cardIngredientsList = document.getElementById('card-ingredients-list');
 const cardDescription = document.getElementById('card-description');
-const deleteRecipeBtn = document.getElementById('delete-recipe-btn'); // НОВАЯ КНОПКА
+const deleteRecipeBtn = document.getElementById('delete-recipe-btn');
 
 // Данные
 let recipes = [];
 let currentIngredients = []; 
 let selectedRecipes = {}; 
 
-// === УПРАВЛЕНИЕ ОКНАМИ ===
-menuBtn.addEventListener('click', () => { sidebar.classList.add('open'); sidebarOverlay.classList.add('active'); });
-const closeSidebar = () => { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('active'); };
+// === УПРАВЛЕНИЕ ОКНАМИ И ПРОКРУТКОЙ ===
+menuBtn.addEventListener('click', () => { 
+    sidebar.classList.add('open'); 
+    sidebarOverlay.classList.add('active'); 
+    document.body.classList.add('no-scroll'); 
+});
+
+const closeSidebar = () => { 
+    sidebar.classList.remove('open'); 
+    sidebarOverlay.classList.remove('active'); 
+    document.body.classList.remove('no-scroll'); 
+};
 closeSidebarBtn.addEventListener('click', closeSidebar);
 sidebarOverlay.addEventListener('click', closeSidebar);
 
-openAddModalBtn.addEventListener('click', () => { addRecipeModal.style.display = 'flex'; });
-closeAddModalBtn.addEventListener('click', () => { addRecipeModal.style.display = 'none'; });
-closeCardBtn.addEventListener('click', () => { recipeCardModal.style.display = 'none'; });
+openAddModalBtn.addEventListener('click', () => { 
+    addRecipeModal.style.display = 'flex'; 
+    document.body.classList.add('no-scroll'); 
+});
+
+closeAddModalBtn.addEventListener('click', () => { 
+    addRecipeModal.style.display = 'none'; 
+    document.body.classList.remove('no-scroll'); 
+});
+
+closeCardBtn.addEventListener('click', () => { 
+    recipeCardModal.style.display = 'none'; 
+    document.body.classList.remove('no-scroll'); 
+});
 
 window.addEventListener('click', (e) => {
-    if(e.target === addRecipeModal) addRecipeModal.style.display = 'none';
-    if(e.target === recipeCardModal) recipeCardModal.style.display = 'none';
+    if(e.target === addRecipeModal) {
+        addRecipeModal.style.display = 'none';
+        document.body.classList.remove('no-scroll');
+    }
+    if(e.target === recipeCardModal) {
+        recipeCardModal.style.display = 'none';
+        document.body.classList.remove('no-scroll');
+    }
 });
 
 recipeImgInput.addEventListener('change', () => {
@@ -183,6 +209,7 @@ addRecipeBtn.addEventListener('click', async function() {
     addRecipeBtn.disabled = false; addRecipeBtn.textContent = 'Сохранить готовый рецепт';
     
     addRecipeModal.style.display = 'none'; 
+    document.body.classList.remove('no-scroll'); 
     loadRecipes(); 
 });
 
@@ -190,34 +217,26 @@ addRecipeBtn.addEventListener('click', async function() {
 function displayRecipeGrid() {
     recipeGrid.innerHTML = '';
 
-    // Шаг 1: Группируем рецепты по категориям
     const categories = {};
     
     recipes.forEach(function(recipe) {
-        const cat = recipe.category || 'Без категории'; // Если категории нет
-        if (!categories[cat]) {
-            categories[cat] = [];
-        }
+        const cat = recipe.category || 'Без категории'; 
+        if (!categories[cat]) { categories[cat] = []; }
         categories[cat].push(recipe);
     });
 
-    // Шаг 2: Выводим категории на экран
     Object.keys(categories).sort().forEach(function(catName) {
-        // Создаем блок для категории
         const section = document.createElement('div');
         section.className = 'category-section';
 
-        // Заголовок категории
         const header = document.createElement('h2');
         header.className = 'category-header';
         header.textContent = catName;
         section.appendChild(header);
 
-        // Сетка для карточек этой категории
         const grid = document.createElement('div');
         grid.className = 'category-grid';
 
-        // Шаг 3: Добавляем карточки в эту сетку
         categories[catName].forEach(function(recipe) {
             const defaultImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'><rect width='40' height='40' fill='%23e5e7eb'/></svg>";
             const card = document.createElement('div');
@@ -267,19 +286,20 @@ function displayRecipeGrid() {
                 });
                 cardDescription.textContent = recipe.description || 'Описание отсутствует.';
                 
-                // === ПРИВЯЗЫВАЕМ УДАЛЕНИЕ ИМЕННО К ЭТОМУ РЕЦЕПТУ ===
                 deleteRecipeBtn.onclick = async function() {
                     const confirmDelete = confirm(`Вы уверены, что хотите навсегда удалить рецепт "${recipe.name}"?`);
                     if (confirmDelete) {
                         await deleteDoc(doc(db, "recipes", recipe.id));
-                        delete selectedRecipes[recipe.id]; // Убираем из корзины, если он там был
-                        recipeCardModal.style.display = 'none'; // Закрываем карточку
-                        loadRecipes(); // Обновляем базу
-                        calculateShoppingList(); // Обновляем корзину
+                        delete selectedRecipes[recipe.id]; 
+                        recipeCardModal.style.display = 'none'; 
+                        document.body.classList.remove('no-scroll');
+                        loadRecipes(); 
+                        calculateShoppingList(); 
                     }
                 };
 
                 recipeCardModal.style.display = 'flex';
+                document.body.classList.add('no-scroll'); 
             };
 
             img.addEventListener('click', openCard);
@@ -291,11 +311,11 @@ function displayRecipeGrid() {
             card.appendChild(img);
             card.appendChild(infoDiv);
             
-            grid.appendChild(card); // Кладем карточку в сетку категории
+            grid.appendChild(card); 
         });
 
         section.appendChild(grid);
-        recipeGrid.appendChild(section); // Кладем всю категорию на главную страницу
+        recipeGrid.appendChild(section); 
     });
 }
 
@@ -382,7 +402,7 @@ function calculateShoppingList() {
     });
 }
 
-// === КОПИРОВАНИЕ (БЛЮДА + ПРОДУКТЫ) ===
+// === КОПИРОВАНИЕ ===
 copyBtn.addEventListener('click', function() {
     const selectedIds = Object.keys(selectedRecipes);
     if (selectedIds.length === 0) return alert('Корзина пуста!');
