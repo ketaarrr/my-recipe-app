@@ -1,116 +1,142 @@
 /* Базовые настройки страницы */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; /* Более современный шрифт */
+    background-color: #f0f4f8; /* Свежий светлый фон */
     color: #333;
     margin: 0;
     padding: 20px;
 }
 
-/* Ограничиваем ширину на больших экранах, чтобы сайт не растягивался на весь монитор */
+/* Ограничиваем ширину */
 .container {
     max-width: 900px;
     margin: 0 auto;
 }
 
-/* Настройки главного блока: Flexbox позволяет ставить элементы рядом */
+/* Главный блок */
 main {
     display: flex;
     gap: 20px;
-    flex-wrap: wrap; /* Самое важное для телефона: если места мало, блоки перенесутся друг под друга */
+    flex-wrap: wrap;
 }
 
-/* Настройки для каждого белого блока (рецепты и покупки) */
+/* Настройки для белых карточек */
 section {
     background: white;
-    padding: 20px;
-    border-radius: 10px;
-    flex: 1; /* Блоки займут равное пространство */
-    min-width: 300px; /* Минимальная ширина, чтобы на телефоне блок занял весь экран */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    padding: 25px;
+    border-radius: 12px; /* Более скругленные современные углы */
+    flex: 1;
+    min-width: 300px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.06); /* Мягкая "парящая" тень */
 }
 
-/* Красивые поля ввода и кнопки */
-input[type="text"] {
+/* Настраиваем поля ввода */
+input[type="text"], input[type="number"], select {
     padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    width: calc(100% - 22px);
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    width: 100%; 
     margin-bottom: 10px;
+    box-sizing: border-box; /* Обязательно для ровных размеров */
+    outline: none; /* Убираем стандартную черную обводку браузера */
+    transition: border-color 0.2s; /* Плавность */
 }
 
+/* Эффект при клике на поле ввода */
+input[type="text"]:focus, input[type="number"]:focus, select:focus {
+    border-color: #3b82f6; /* Голубая обводка */
+}
+
+/* === ГОЛУБЫЕ КНОПКИ === */
 button {
-    background-color: #ff6b6b;
+    background-color: #3b82f6; /* Современный голубой цвет */
     color: white;
     border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
+    padding: 12px 15px;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
     width: 100%;
+    transition: background-color 0.2s, transform 0.1s; 
 }
 
-/* Убираем стандартные точки у списков */
+/* Эффект наведения мышки */
+button:hover {
+    background-color: #2563eb; /* Чуть более темный голубой */
+}
+
+/* Эффект нажатия (кнопка чуть-чуть проминается) */
+button:active {
+    transform: scale(0.98);
+}
+
+/* Настройки списков */
 ul {
     list-style-type: none;
     padding: 0;
+    margin: 0;
 }
 
 li {
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
 }
 
-/* Выстраиваем поля ингредиентов в один ряд */
+/* === РЯД ИНГРЕДИЕНТОВ === */
 .ingredient-row {
     display: flex;
     gap: 10px;
     margin-bottom: 10px;
 }
 
-/* Настраиваем ширину полей */
-#ing-name { flex: 2; }
-#ing-amount { flex: 1; min-width: 60px; }
-#ing-unit { flex: 1; }
-
-/* Кнопка плюсика (добавление ингредиента) */
-#add-ing-btn { 
-    flex: 1; 
-    background-color: #4caf50; /* Зеленый цвет для плюсика */
-    font-size: 1.2em;
+/* Делаем все 4 поля РАВНОГО размера */
+#ing-name, #ing-amount, #ing-unit, #add-ing-btn {
+    flex: 1;
+    margin-bottom: 0; /* Убираем отступ снизу, чтобы ряд был ровным */
 }
 
-/* Временный список ингредиентов */
-#temp-ing-list { 
-    font-size: 0.9em; 
-    color: #555; 
-    margin-bottom: 15px; 
+/* Настройки кнопки плюсика */
+#add-ing-btn {
+    background-color: #3b82f6; /* Делаем её тоже голубой */
+    font-size: 1.4em;
+    padding: 0; /* Чтобы плюсик был ровно по центру */
 }
+
+#add-ing-btn:hover {
+    background-color: #2563eb;
+}
+
+/* Временный список */
+#temp-ing-list {
+    font-size: 0.9em;
+    color: #6b7280;
+    margin-bottom: 15px;
+}
+
 #temp-ing-list li {
     padding: 5px 0;
-    border-bottom: 1px dashed #ccc;
+    border-bottom: 1px dashed #e5e7eb;
 }
 
-/* Делаем так, чтобы название рецепта и кнопка удаления стояли по краям */
+/* === КНОПКА УДАЛЕНИЯ === */
 #recipe-list li {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-/* Стили для маленькой кнопки удаления */
 .delete-btn {
     background-color: transparent;
-    color: #ff6b6b;
-    border: 1px solid #ff6b6b;
-    padding: 3px 8px;
-    border-radius: 5px;
+    color: #ef4444; /* Оставляем красной для безопасности */
+    border: 1px solid #ef4444;
+    padding: 5px 10px;
+    border-radius: 6px;
     font-size: 0.8em;
     cursor: pointer;
-    width: auto; /* Отменяем растягивание на 100% */
+    width: auto;
 }
 
 .delete-btn:hover {
-    background-color: #ff6b6b;
+    background-color: #ef4444;
     color: white;
 }
