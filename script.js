@@ -18,6 +18,7 @@ const db = getFirestore(app);
 const recipeGrid = document.getElementById('recipe-grid');
 const shoppingList = document.getElementById('shopping-list');
 const copyBtn = document.getElementById('copy-btn');
+const clearCartBtn = document.getElementById('clear-cart-btn');
 const searchInput = document.getElementById('search-input'); 
 const categoryFilters = document.getElementById('category-filters'); 
 const floatingCartBtn = document.getElementById('floating-cart-btn');
@@ -508,6 +509,18 @@ themeBtn.addEventListener('click', function() {
     if (document.body.classList.contains('dark-theme')) {
         themeBtn.textContent = 'Светлая тема'; localStorage.setItem('app-theme', 'dark');
     } else { themeBtn.textContent = 'Тёмная тема'; localStorage.setItem('app-theme', 'light'); }
+});
+
+// === ОЧИСТКА КОРЗИНЫ ===
+clearCartBtn.addEventListener('click', function() {
+    const selectedIds = Object.keys(selectedRecipes);
+    if (selectedIds.length === 0) return; // Если корзина уже пуста, ничего не делаем
+    
+    if (confirm('Точно удалить все блюда из корзины?')) {
+        selectedRecipes = {}; // Обнуляем корзину
+        calculateShoppingList(); // Обновляем список (это автоматически сохранит пустую корзину в облако)
+        displayRecipeGrid(searchInput.value.trim().toLowerCase()); // Снимаем зеленые выделения с карточек
+    }
 });
 
 loadRecipes();

@@ -4,6 +4,9 @@ body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background
 .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .header-left { display: flex; align-items: center; gap: 15px; }
 
+/* === ИСПРАВЛЕНИЕ ПЕРЕКРЫТИЯ ПЛАВАЮЩЕЙ КНОПКОЙ === */
+main { padding-bottom: 100px; }
+
 /* === ПОЛЯ ВВОДА И ТЕКСТА === */
 input[type="text"], input[type="number"], select, textarea { padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; width: 100%; margin-bottom: 12px; box-sizing: border-box; outline: none; transition: border-color 0.2s; font-family: inherit; }
 input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus { border-color: #3b82f6; }
@@ -57,30 +60,10 @@ button:active { transform: scale(0.98); }
 .cart-counter-value { font-weight: bold; font-size: 1.1em; }
 
 /* === ПЛАВАЮЩАЯ КНОПКА КОРЗИНЫ === */
-.floating-cart-btn {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background-color: #10b981;
-    color: white;
-    border: none;
-    padding: 15px 25px;
-    border-radius: 30px;
-    font-size: 1.1em;
-    font-weight: bold;
-    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
-    cursor: pointer;
-    z-index: 990;
-    display: none; /* Скрыта пока корзина пуста */
-    transition: transform 0.2s, background-color 0.2s;
-}
+.floating-cart-btn { position: fixed; bottom: 30px; right: 30px; background-color: #10b981; color: white; border: none; padding: 15px 25px; border-radius: 30px; font-size: 1.1em; font-weight: bold; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); cursor: pointer; z-index: 990; display: none; transition: transform 0.2s, background-color 0.2s; }
 .floating-cart-btn:hover { background-color: #059669; transform: translateY(-3px); }
 .floating-cart-btn.visible { display: block; animation: popIn 0.3s ease-out; }
-
-@keyframes popIn {
-    0% { transform: scale(0.5); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-}
+@keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
 /* === ВЫЕЗЖАЮЩАЯ КОРЗИНА (SIDEBAR) === */
 .sidebar { position: fixed; top: 0; right: -360px; width: 360px; height: 100%; background: white; box-shadow: -5px 0 25px rgba(0,0,0,0.15); z-index: 1000; transition: right 0.3s ease; padding: 25px; box-sizing: border-box; display: flex; flex-direction: column; }
@@ -90,9 +73,15 @@ button:active { transform: scale(0.98); }
 .close-btn:hover { color: #333; }
 .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; display: none; }
 .sidebar-overlay.active { display: block; }
-#shopping-list { flex-grow: 1; overflow-y: auto; margin-bottom: 20px; }
+
+#shopping-list { flex-grow: 1; overflow-y: auto; margin-bottom: 0; padding-bottom: 20px; }
 #shopping-list li { padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #4b5563; }
+
+/* === ПОДВАЛ КОРЗИНЫ (С КНОПКАМИ) === */
+.sidebar-footer { display: flex; flex-direction: column; gap: 10px; margin-top: auto; background: white; padding-top: 15px; }
 .sidebar-action-btn { width: 100%; padding: 14px; }
+.clear-cart-btn { background-color: transparent; color: #ef4444; border: 1px solid #ef4444; }
+.clear-cart-btn:hover { background-color: #ef4444; color: white; }
 
 /* === СПИСОК БЛЮД В КОРЗИНЕ === */
 .sidebar-section-title { font-size: 0.85em; text-transform: uppercase; color: #9ca3af; letter-spacing: 1px; margin: 20px 0 10px 0; border-bottom: 1px solid #f3f4f6; padding-bottom: 5px; }
@@ -145,6 +134,7 @@ body.dark-theme .file-upload-btn { background-color: #334155; color: #cbd5e1; bo
 body.dark-theme .sidebar-overlay { background: rgba(0,0,0,0.7); }
 body.dark-theme li, body.dark-theme #temp-ing-list li { border-bottom-color: #334155; }
 body.dark-theme #shopping-list li { color: #cbd5e1; border-bottom-color: #334155; }
+body.dark-theme .sidebar-footer { background: #1e293b; } /* Темная тема для подвала корзины */
 body.dark-theme .dish-card-title { color: #f8fafc; }
 body.dark-theme .dish-card-category { color: #94a3b8; }
 body.dark-theme .add-to-cart-btn { background-color: #334155; color: #cbd5e1; }
