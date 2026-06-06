@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // !!! ТВОИ КЛЮЧИ !!!
 const firebaseConfig = {
@@ -20,7 +20,7 @@ const shoppingList = document.getElementById('shopping-list');
 const copyBtn = document.getElementById('copy-btn');
 const searchInput = document.getElementById('search-input'); 
 const categoryFilters = document.getElementById('category-filters'); 
-const floatingCartBtn = document.getElementById('floating-cart-btn'); // НОВАЯ КНОПКА
+const floatingCartBtn = document.getElementById('floating-cart-btn');
 
 // Модальное окно добавления
 const addRecipeModal = document.getElementById('add-recipe-modal');
@@ -55,14 +55,16 @@ const cardIngredientsList = document.getElementById('card-ingredients-list');
 const cardDescription = document.getElementById('card-description');
 const deleteRecipeBtn = document.getElementById('delete-recipe-btn');
 
+// Данные
 let recipes = [];
 let currentIngredients = []; 
 let selectedRecipes = {}; 
+let isAppLoading = true; // НОВОЕ: Флаг для защиты от лишних сохранений при загрузке
 
 // === УПРАВЛЕНИЕ ОКНАМИ ===
 const openSidebar = () => { sidebar.classList.add('open'); sidebarOverlay.classList.add('active'); document.body.classList.add('no-scroll'); };
 menuBtn.addEventListener('click', openSidebar);
-floatingCartBtn.addEventListener('click', openSidebar); // Плавающая кнопка тоже открывает корзину
+floatingCartBtn.addEventListener('click', openSidebar); 
 
 const closeSidebar = () => { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('active'); document.body.classList.remove('no-scroll'); };
 closeSidebarBtn.addEventListener('click', closeSidebar);
@@ -102,6 +104,9 @@ function compressImage(file) {
 
 // === ЗАГРУЗКА ИЗ БД ===
 async function loadRecipes() {
+    isAppLoading = true; // Начинаем загрузку
+    
+    // 1. Грузим рецепты
     const querySnapshot = await getDocs(collection(db, "recipes"));
     recipes = []; 
     querySnapshot.forEach((doc) => {
@@ -109,9 +114,21 @@ async function loadRecipes() {
         recipeData.id = doc.id;
         recipes.push(recipeData);
     });
+
+    // 2. НОВОЕ: Загружаем единую корзину из облака
+    const cartSnap = await getDoc(doc(db, "cart", "shared"));
+    if (cartSnap.exists()) {
+        selectedRecipes = cartSnap.data().items || {};
+    } else {
+        selectedRecipes = {};
+    }
+
     renderCategoryFilters(); 
     displayRecipeGrid();     
     updateIngredientSuggestions();
+    calculateShoppingList(); // Отрисует скачанную корзину
+
+    isAppLoading = false; // Загрузка завершена
 }
 
 function renderTempIngredients() {
@@ -317,7 +334,6 @@ function displayRecipeGrid(searchQuery = '') {
                         recipeCardModal.style.display = 'none'; 
                         document.body.classList.remove('no-scroll');
                         loadRecipes(); 
-                        calculateShoppingList(); 
                     }
                 };
 
@@ -342,7 +358,7 @@ function displayRecipeGrid(searchQuery = '') {
     });
 }
 
-// === ПОДСЧЕТ ПРОДУКТОВ И ОБНОВЛЕНИЕ КНОПОК ===
+// === ПОДСЧЕТ ПРОДУКТОВ И СОХРАНЕНИЕ КОРЗИНЫ В ОБЛАКО ===
 function calculateShoppingList() {
     shoppingList.innerHTML = ''; 
     const selectedIds = Object.keys(selectedRecipes);
@@ -351,13 +367,16 @@ function calculateShoppingList() {
     if (selectedIds.length === 0) { 
         shoppingList.innerHTML = '<li>Пока пусто</li>'; 
         menuBtn.textContent = '☰ Корзина';
-        floatingCartBtn.classList.remove('visible'); // Прячем
+        floatingCartBtn.classList.remove('visible'); 
+        
+        // НОВОЕ: Если корзина пуста, сохраняем пустую корзину в облако
+        if (!isAppLoading) setDoc(doc(db, "cart", "shared"), { items: {} }).catch(e => console.error(e));
         return; 
     }
 
     menuBtn.textContent = `☰ Корзина (${selectedIds.length})`;
     floatingCartBtn.textContent = `☰ Корзина (${selectedIds.length})`;
-    floatingCartBtn.classList.add('visible'); // Показываем
+    floatingCartBtn.classList.add('visible'); 
 
     const dishTitle = document.createElement('div');
     dishTitle.className = 'sidebar-section-title';
@@ -434,6 +453,12 @@ function calculateShoppingList() {
         li.textContent = `${item.name}: ${dAmt} ${dUnit}`;
         shoppingList.appendChild(li);
     });
+
+    // === НОВОЕ: СОХРАНЕНИЕ КОРЗИНЫ В ОБЛАКО ===
+    // Происходит каждый раз, когда меняются продукты, если это не первая загрузка приложения
+    if (!isAppLoading) {
+        setDoc(doc(db, "cart", "shared"), { items: selectedRecipes }).catch(err => console.error(err));
+    }
 }
 
 // === КОПИРОВАНИЕ ===
