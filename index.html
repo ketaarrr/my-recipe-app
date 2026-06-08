@@ -54,20 +54,25 @@
     <div id="add-recipe-modal" class="modal-overlay">
         <div class="modal-content">
             <button id="close-add-modal-btn" class="close-card-btn">✕</button>
-            <h2>Новое блюдо</h2>
+            <h2 id="modal-form-title">Новое блюдо</h2>
             
             <div class="add-recipe-form">
                 <input type="text" id="recipe-name" placeholder="Название блюда (например, Блинчики)...">
                 
-                <select id="recipe-category">
-                    <option value="" disabled selected>Выберите категорию...</option>
-                    <option value="Завтраки">Завтраки</option>
-                    <option value="Супы">Супы</option>
-                    <option value="Горячее">Горячее</option>
-                    <option value="Салаты">Салаты</option>
-                    <option value="Десерты">Десерты</option>
-                    <option value="Выпечка">Выпечка</option>
-                </select>
+                <div class="category-selection-container">
+                    <p class="category-label">Категории блюда (можно несколько):</p>
+                    <div class="category-chips">
+                        <label><input type="checkbox" class="category-checkbox" value="Завтраки"><span>Завтраки</span></label>
+                        <label><input type="checkbox" class="category-checkbox" value="Супы"><span>Супы</span></label>
+                        <label><input type="checkbox" class="category-checkbox" value="Горячее"><span>Горячее</span></label>
+                        <label><input type="checkbox" class="category-checkbox" value="Гарниры"><span>Гарниры</span></label>
+                        <label><input type="checkbox" class="category-checkbox" value="Салаты"><span>Салаты</span></label>
+                        <label><input type="checkbox" class="category-checkbox" value="Закуски"><span>Закуски</span></label>
+                        <label><input type="checkbox" class="category-checkbox" value="Выпечка"><span>Выпечка</span></label>
+                        <label><input type="checkbox" class="category-checkbox" value="Десерты"><span>Десерты</span></label>
+                        <label><input type="checkbox" class="category-checkbox" value="Соусы"><span>Соусы</span></label>
+                    </div>
+                </div>
 
                 <div class="file-upload-wrapper">
                     <label for="recipe-img" class="file-upload-btn">Добавить фото</label>
@@ -86,6 +91,7 @@
                         <option value="кг">кг</option>
                         <option value="мл">мл</option>
                         <option value="л">л</option>
+                        <option value="ч.л.">ч.л.</option>
                         <option value="ст.л.">ст.л.</option>
                     </select>
                     <button id="add-ing-btn" type="button">+</button>
@@ -103,9 +109,8 @@
             <button id="close-card-btn" class="close-card-btn">✕</button>
             <img id="card-img" src="" alt="Фото блюда">
             <div class="recipe-card-content">
-                <div class="card-meta-row">
-                    <span id="card-category" class="badge">Категория</span>
-                </div>
+                <div id="card-meta-row" class="card-meta-row"></div>
+                
                 <h2 id="card-title">Название блюда</h2>
                 
                 <h3>Ингредиенты:</h3>
@@ -114,6 +119,7 @@
                 <h3>Способ приготовления:</h3>
                 <p id="card-description">Здесь будет инструкция...</p>
                 
+                <button id="edit-recipe-btn" class="edit-recipe-btn">Редактировать рецепт</button>
                 <button id="delete-recipe-btn" class="delete-recipe-btn">Удалить рецепт</button>
             </div>
         </div>
